@@ -17,6 +17,7 @@ const debounce = (fn, t = 1000) => {
 
 // Search input event listener
 input.addEventListener("input", debounce(newSearch, 360));
+form.addEventListener("submit", (event) => event.preventDefault());
 
 // Lazy Loading
 const options = {
