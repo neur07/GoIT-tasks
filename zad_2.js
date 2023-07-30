@@ -1,5 +1,4 @@
 // Zadanie 2
-
 const controls = document.getElementById("controls");
 const inputFld = controls.querySelector("input");
 const createBtn = controls.querySelector("[data-action='create']");

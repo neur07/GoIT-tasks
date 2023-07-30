@@ -1,5 +1,4 @@
 // Zadanie 1
-
 class StringBuilder {
   constructor(baseString = "") {
     this.value = baseString;

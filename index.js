@@ -6,8 +6,17 @@ const form = document.getElementById("search-form");
 const input = form.querySelector("input");
 const imgList = document.querySelector("ul");
 
-// Event listeners
-input.addEventListener("input", newSearch);
+// Debounce function to limit API calls
+const debounce = (fn, t = 1000) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), t);
+  };
+};
+
+// Search input event listener
+input.addEventListener("input", debounce(newSearch, 200));
 
 // Lazy Loading
 const options = {
@@ -29,8 +38,7 @@ let currentPage = 1;
 let currentSearch = "";
 let isLoading = false;
 
-// Loading Images
-
+// Loading and Removing Images
 function removeResults() {
   let lastChild = imgList.lastElementChild;
   while (lastChild) {
@@ -39,10 +47,10 @@ function removeResults() {
   }
 }
 
-function newSearch(el) {
+function newSearch(event) {
   removeResults();
   currentPage = 1;
-  currentSearch = el.target.value;
+  currentSearch = event.target.value;
   fetchImg();
 }
 
@@ -52,15 +60,22 @@ async function fetchImg() {
   const URL = `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(
     currentSearch
   )}&page=${currentPage}`;
-  const response = await fetch(URL);
-  const images = await response.json();
-  images.hits.forEach((image) =>
-    renderImage({
-      alt: image.tags,
-      webformatURL: image.webformatURL,
-      largeImageURL: image.largeImageURL,
-    })
-  );
+  try {
+    const response = await fetch(URL);
+    if (!response.ok) {
+      throw new Error("Failed to fetch images");
+    }
+    const images = await response.json();
+    images.hits.forEach((image) =>
+      renderImage({
+        alt: image.tags,
+        webformatURL: image.webformatURL,
+        largeImageURL: image.largeImageURL,
+      })
+    );
+  } catch (error) {
+    console.error(error);
+  }
   isLoading = false;
   const lastLi = imgList.querySelector("li:last-of-type");
   observer.observe(lastLi);
@@ -84,7 +99,6 @@ function renderImage(image) {
 }
 
 // Modal
-
 function openModal(largeImageURL) {
   const instance = basicLightbox.create(
     `<img src="${largeImageURL}" alt="Larger Image">`
